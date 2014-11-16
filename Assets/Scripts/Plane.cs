@@ -38,6 +38,7 @@ public class Plane : MonoBehaviour
     //Random ran;
 
     Vector3[] DisplacementMap;
+    Vector3[] OriginalPos;
     Texture2D TransparencyMap;
     Texture2D DiffuseMap;
     Texture2D NormalMap;
@@ -51,6 +52,14 @@ public class Plane : MonoBehaviour
     Color[] Diffuse;
     Color[] Normal;
 	Color[] Displacement;
+
+    ComplexF[] ComplexDisplacementMap;      //Htilde0
+    ComplexF[] ComplexDisplacementMapConj;  //Htilde0mk Conjugate
+    ComplexF[] SlopeX;
+    ComplexF[] SlopeZ;
+    ComplexF[] DisplaceX;
+    ComplexF[] DisplaceZ;
+
 
     public enum waveSimulationType
     {
@@ -82,11 +91,24 @@ public class Plane : MonoBehaviour
 		DebugNormal = new Texture2D(TextureResolution, TextureResolution);
 		DebugTransparency = new Texture2D(TextureResolution, TextureResolution);
 
+        Debug.Log("Set up base maps and arrays at " + Time.time);
+
+        ComplexDisplacementMap = new ComplexF[TextureResolution * TextureResolution];
+        ComplexDisplacementMapConj = new ComplexF[TextureResolution * TextureResolution];
+        DisplaceX = new ComplexF[TextureResolution * TextureResolution];
+        DisplaceZ = new ComplexF[TextureResolution * TextureResolution];
+        SlopeX = new ComplexF[TextureResolution * TextureResolution];
+        SlopeZ = new ComplexF[TextureResolution * TextureResolution];
+
         _LengthWidth = LengthWidth;
         _PlaneScale = PlaneScale;
         //ran = new Random();
+
+        if (!DoTheWave)
+            SetUpComplex();
+        
 	}
-    
+
     void SetUpMesh()
     {
         if(_LengthWidth != LengthWidth || _PlaneScale != PlaneScale)
@@ -141,69 +163,113 @@ public class Plane : MonoBehaviour
             _LengthWidth = LengthWidth;
             _PlaneScale = PlaneScale;
         }
+        Debug.Log("Setup Mesh OK");
     }
 
-    float GaussianRnd()
+    void SetUpComplex()
     {
-        float x1 = Random.value;
-        float x2 = Random.value;
+        ComplexF htilde0, htilde0mkconj;
+        for (int x = 0; x < TextureResolution; x++)
+        {
+            for (int y = 0; y < TextureResolution; y++)
+            {
+                float kz = Mathf.PI * (2 * y - TextureResolution) / TextureResolution;
+                float kx = Mathf.PI * (2 * x - TextureResolution) / TextureResolution;
+                float len = Mathf.Sqrt(kx * kx + kz * kz);
+                int index = y * TextureResolution + x;
+                htilde0 = hTilde_0(x, y);
+                htilde0mkconj = hTilde_0(-x, -y).GetConjugate();
 
-        if (x1 == 0)
-            x1 = 0.01f;
+                ComplexDisplacementMap[index] = htilde0;
+                ComplexDisplacementMapConj[index] = htilde0mkconj;
 
-        return Mathf.Sqrt(-2.0f * Mathf.Log(x1) * Mathf.Cos(2.0f * Mathf.PI * x2));
+                SlopeX[index] = ComplexDisplacementMap[index] * new ComplexF(0, kx);
+                SlopeZ[index] = ComplexDisplacementMap[index] * new ComplexF(0, kz);
+                if (len < 0.000001f)
+                {
+                    DisplaceX[index] = new ComplexF(0, 0);
+                    DisplaceZ[index] = new ComplexF(0, 0);
+                }
+                else
+                {
+                    DisplaceX[index] = ComplexDisplacementMap[index] * new ComplexF(0, -kx / len);
+                    DisplaceZ[index] = ComplexDisplacementMap[index] * new ComplexF(0, -kz / len);
+                }
+            }
+        }
+
+        int sign;
+        float[] signs = { 1.0f, -1.0f };
+
+        for (int m_prime = 0; m_prime < TextureResolution; m_prime++)
+        {
+            for (int n_prime = 0; n_prime < TextureResolution; n_prime++)
+            {
+                int index = m_prime * TextureResolution + n_prime;
+                sign = (int)signs[(n_prime + m_prime) & 1];
+
+                ComplexDisplacementMap[index] *= sign;
+                DisplaceX[index] *= sign;
+                DisplaceZ[index] *= sign;
+                SlopeX[index] *= sign;
+                SlopeZ[index] *= sign;
+                float xoffset = n_prime % ((TextureResolution - 1) / (LengthWidth - 1));
+                float zoffset = m_prime % ((TextureResolution - 1) / (LengthWidth - 1));
+                DisplacementMap[index].y = ComplexDisplacementMap[index].Re;
+                DisplacementMap[index].x = xoffset * PlaneScale + DisplaceX[index].Re * -1;
+                DisplacementMap[index].z = zoffset * PlaneScale + DisplaceZ[index].Re * -1;
+                Vector3 n = new Vector3(0.0f - SlopeX[index].Re, 0.0f, 0.0f - SlopeZ[index].Re).normalized;
+                Normal[index] = new Color(n.x, n.y, n.z);
+
+
+                if (n_prime == 0 && m_prime == 0)
+                {
+                    float tempOffsetX = (TextureResolution - 1) % ((TextureResolution - 1) / (LengthWidth - 1));
+                    float tempOffsetZ = (TextureResolution - 1) % ((TextureResolution - 1) / (LengthWidth - 1));
+                    DisplacementMap[index + TextureResolution - 1 + (TextureResolution - 1) * TextureResolution].y = ComplexDisplacementMap[index].Re;
+                    DisplacementMap[index + TextureResolution - 1 + (TextureResolution - 1) * TextureResolution].x = tempOffsetX * PlaneScale + DisplaceX[index].Re * -1;
+                    DisplacementMap[index + TextureResolution - 1 + (TextureResolution - 1) * TextureResolution].z = tempOffsetZ * PlaneScale + DisplaceZ[index].Re * -1;
+
+                    Normal[index + TextureResolution - 1 + (TextureResolution - 1) * TextureResolution] = new Color(n.x, n.y, n.z);
+                }
+                if (n_prime == 0)
+                {
+                    float tempOffsetX = (TextureResolution - 1) % ((TextureResolution - 1) / (LengthWidth - 1));
+                    float tempOffsetZ = m_prime % ((TextureResolution - 1) / (LengthWidth - 1));
+                    DisplacementMap[index + TextureResolution - 1].y = ComplexDisplacementMap[index].Re;
+                    DisplacementMap[index + TextureResolution - 1].x = tempOffsetX * PlaneScale + DisplaceX[index].Re;
+                    DisplacementMap[index + TextureResolution - 1].z = tempOffsetZ * PlaneScale + DisplaceZ[index].Re;
+
+                    Normal[index + TextureResolution - 1] = new Color(n.x, n.y, n.z);
+
+                }
+                if (m_prime == 0)
+                {
+                    float tempOffsetX = n_prime % ((TextureResolution - 1) / (LengthWidth - 1));
+                    float tempOffsetZ = (TextureResolution - 1) % ((TextureResolution - 1) / (LengthWidth - 1));
+                    DisplacementMap[index + (TextureResolution - 1) * TextureResolution].y = ComplexDisplacementMap[index].Re;
+                    DisplacementMap[index + (TextureResolution - 1) * TextureResolution].x = tempOffsetX * PlaneScale + DisplaceX[index].Re;
+                    DisplacementMap[index + (TextureResolution - 1) * TextureResolution].z = tempOffsetZ * PlaneScale + DisplaceZ[index].Re;
+                    Normal[index + (TextureResolution - 1) * TextureResolution] = new Color(n.x, n.y, n.z);
+                }
+            }
+        }
+        mesh.Clear();
+        mesh.vertices = Vertices;
+        mesh.uv = UVs;
+        mesh.triangles = Triangles;
+        meshC.sharedMesh = mesh;
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        Tangents = mesh.tangents;
+        CalculateTangents();
+        Normals = mesh.normals;
+        renderer.sharedMaterial = material;
+        _LengthWidth = LengthWidth;
+        _PlaneScale = PlaneScale;
+        Debug.Log("Set up complex maps and arrays at " + Time.time);
     }
 
-    float Dispersion(int n_prime, int m_prime)
-    {
-        float w_0 = 2.0f * Mathf.PI / 200.0f;
-        float kx = Mathf.PI * (2 * n_prime - LengthWidth) / LengthWidth;
-        float kz = Mathf.PI * (2 * m_prime - LengthWidth) / LengthWidth;
-        return Mathf.Floor(Mathf.Sqrt(g * Mathf.Sqrt(kx * kx + kz * kz)) / w_0) * w_0;
-    }
-
-    float Phillips(int n_prime, int m_prime)
-    {
-        Vector2 k = new Vector2(Mathf.PI * (2 * n_prime - LengthWidth) / LengthWidth,
-            Mathf.PI * (2 * m_prime - LengthWidth) / LengthWidth);
-        float k_length = k.magnitude;
-        if (k_length < 0.00001f) return 0;
-
-        float k_length2 = k_length * k_length;
-        float k_length4 = k_length2 * k_length2;
-
-        float k_dot_w = Vector2.Dot(k.normalized, Wind.normalized);
-        float k_dot_w2 = k_dot_w * k_dot_w;
-
-        float w_length = Wind.magnitude;
-        float L = w_length * w_length / g;
-        float L2 = L * L;
-
-        float damping = 0.001f;
-        float l2 = L2 * damping * damping;
-
-        return Height * Mathf.Exp(-1.0f / (k_length2 * L2)) / k_length4 * k_dot_w2 * Mathf.Exp(-k_length2 * l2);
-    }
-
-    ComplexF hTilde_0(int n_prime, int m_prime)
-    {
-        ComplexF r = new ComplexF(GaussianRnd(), GaussianRnd());
-        return r*Mathf.Sqrt(Phillips(n_prime, m_prime) / 2.0f);
-    }
-
-    ComplexF hTilde(int n_prime, int m_prime)
-    {
-        //int index = m_prime * LengthWidth + 1 + n_prime;
-
-
-
-        return new ComplexF(0.0f, 0.0f);
-    }
-
-    void EvaluateWaves()
-    {
-    }
-    
     // Update is called once per frame
     void Update()
     {
@@ -211,8 +277,13 @@ public class Plane : MonoBehaviour
             SetUpMesh();
         if (DoTheWave)
             UpdateHeightMap();
-        
 	}
+
+    void FixedUpdate()
+    {
+        if(!DoTheWave)
+            EvaluateWaves();
+    }
 
     void UpdateHeightMap()
     {
@@ -221,7 +292,7 @@ public class Plane : MonoBehaviour
             for (int y = 0; y < TextureResolution; y++)
             {
                 int index = TextureResolution * y + x;
-                float xoffset = x % ((TextureResolution - 1) / (LengthWidth - 1)) * x % ((TextureResolution - 1) / (LengthWidth - 1));
+                float xoffset = x % ((TextureResolution - 1) / (LengthWidth - 1));// *x % ((TextureResolution - 1) / (LengthWidth - 1));
                 DisplacementMap[index].x = xoffset * PlaneScale + Magnitude * Mathf.Cos((Speed * Time.time + x/(TextureResolution/LengthWidth)));
                 DisplacementMap[index].y = Height * Mathf.Sin((TransverseSpeed * Time.time) + (float)x / (TextureResolution / LengthWidth));   //(float)
                 //DebugDiffuse.SetPixel(x, y, new Color(1, (DisplacementMap[index].y+Height)/(2*Height), DisplacementMap[index].z, 1));
@@ -329,7 +400,6 @@ public class Plane : MonoBehaviour
         float h01;
         float h02;
         float h10;
-        float h11;
         float h12;
         float h20;
         float h21;
@@ -652,5 +722,188 @@ public class Plane : MonoBehaviour
         CalculateTangents();
         meshC.enabled = false;
         meshC.enabled = true;
+    }
+
+    float GaussianRnd()
+    {
+        //Debug.Log("GaussianRnd Called");
+        float x1 = Random.value;
+        float x2 = Random.value;
+
+        if (x1 == 0)
+            x1 = 0.01f;
+
+        return Mathf.Sqrt(-2.0f * Mathf.Log(x1) * Mathf.Cos(2.0f * Mathf.PI * x2));
+    }
+
+    float Dispersion(int n_prime, int m_prime)
+    {
+        //Debug.Log("Dispersion Called");
+        float w_0 = 2.0f * Mathf.PI / 200.0f;
+        float kx = Mathf.PI * (2 * n_prime - LengthWidth) / LengthWidth;
+        float kz = Mathf.PI * (2 * m_prime - LengthWidth) / LengthWidth;
+        return Mathf.Floor(Mathf.Sqrt(g * Mathf.Sqrt(kx * kx + kz * kz)) / w_0) * w_0;
+    }
+
+    float Phillips(int n_prime, int m_prime)
+    {
+        //Debug.Log("Phillips Called");
+        Vector2 k = new Vector2(Mathf.PI * (2 * n_prime - LengthWidth) / LengthWidth,
+            Mathf.PI * (2 * m_prime - LengthWidth) / LengthWidth);
+        float k_length = k.magnitude;
+        if (k_length < 0.00001f) return 0;
+
+        float k_length2 = k_length * k_length;
+        float k_length4 = k_length2 * k_length2;
+
+        float k_dot_w = Vector2.Dot(k.normalized, Wind.normalized);
+        float k_dot_w2 = k_dot_w * k_dot_w;
+
+        float w_length = Wind.magnitude;
+        float L = w_length * w_length / g;
+        float L2 = L * L;
+
+        float damping = 0.001f;
+        float l2 = L2 * damping * damping;
+
+        return Height * Mathf.Exp(-1.0f / (k_length2 * L2)) / k_length4 * k_dot_w2 * Mathf.Exp(-k_length2 * l2);
+    }
+
+    ComplexF hTilde_0(int n_prime, int m_prime)
+    {
+        //Debug.Log("hTilde_0 Called");
+        ComplexF r = new ComplexF(GaussianRnd(), GaussianRnd());
+        return r * Mathf.Sqrt(Phillips(n_prime, m_prime) / 2.0f);
+    }
+
+    ComplexF hTilde(int n_prime, int m_prime)
+    {
+        //Debug.Log("hTilde Called");
+        int index = m_prime * LengthWidth + 1 + n_prime;
+
+        //float t = Time.time;
+
+        ComplexF htilde0 = new ComplexF(ComplexDisplacementMap[index].Re, ComplexDisplacementMap[index].Im);
+        ComplexF htilde0mkconj = new ComplexF(ComplexDisplacementMapConj[index].Re, ComplexDisplacementMapConj[index].Im);
+
+        float omegat = Dispersion(n_prime, m_prime);
+        float sin_ = Mathf.Sin(omegat);
+        float cos_ = Mathf.Cos(omegat);
+
+        ComplexF c0 = new ComplexF(cos_, sin_);
+        ComplexF c1 = new ComplexF(cos_, sin_);
+
+        ComplexF res = htilde0 * c0 + htilde0mkconj * c1;
+
+        return res;
+    }
+
+    void EvaluateWaves()
+    {
+        //Debug.Log("Evaluating Waves at " + Time.time);
+        float kx, kz, len, lambda = 1.0f;
+        int index;
+        for (int m_prime = 0; m_prime < TextureResolution; m_prime++)
+        {
+            kz = Mathf.PI * (2 * m_prime - TextureResolution) / TextureResolution;
+            for (int n_prime = 0; n_prime < TextureResolution; n_prime++)
+            {
+                kx = Mathf.PI * (2 * n_prime - TextureResolution) / TextureResolution;
+                len = Mathf.Sqrt(kx * kx + kz * kz);
+                index = m_prime * TextureResolution + n_prime;
+
+                ComplexDisplacementMap[index] = hTilde(n_prime, m_prime);
+                SlopeX[index] = ComplexDisplacementMap[index] * new ComplexF(0, kx);
+                SlopeZ[index] = ComplexDisplacementMap[index] * new ComplexF(0, kz);
+                if (len < 0.000001f)
+                {
+                    DisplaceX[index] = new ComplexF(0, 0);
+                    DisplaceZ[index] = new ComplexF(0, 0);
+                }
+                else
+                {
+                    DisplaceX[index] = ComplexDisplacementMap[index] * new ComplexF(0, -kx / len);
+                    DisplaceZ[index] = ComplexDisplacementMap[index] * new ComplexF(0, -kz / len);
+                }
+            }
+        }
+
+        //Debug.Log("Evaluating FFT at " + Time.time);
+        Fourier.FFT2(ComplexDisplacementMap, TextureResolution, TextureResolution, FourierDirection.Backward);
+        Fourier.FFT2(SlopeX, TextureResolution, TextureResolution, FourierDirection.Backward);
+        Fourier.FFT2(SlopeZ, TextureResolution, TextureResolution, FourierDirection.Backward);
+        Fourier.FFT2(DisplaceX, TextureResolution, TextureResolution, FourierDirection.Backward);
+        Fourier.FFT2(DisplaceZ, TextureResolution, TextureResolution, FourierDirection.Backward);
+        //Debug.Log("FFT Complete, now assigning values to displace map at " + Time.time);
+        int sign;
+        float[] signs = { 1.0f, -1.0f};
+        for (int m_prime = 0; m_prime < TextureResolution; m_prime++)
+        {
+            for (int n_prime = 0; n_prime < TextureResolution; n_prime++)
+            {
+                index = m_prime * TextureResolution + n_prime;
+                Debug.Log(ComplexDisplacementMap[index].Re);
+                Debug.Log(DisplaceX[index].Re);
+                Debug.Log(DisplaceZ[index].Re);
+                Debug.Log(SlopeX[index].Re);
+                Debug.Log(SlopeZ[index].Re);
+                sign = (int)signs[(n_prime + m_prime) & 1];
+
+                ComplexDisplacementMap[index] *= sign;
+                DisplaceX[index] *= sign;
+                DisplaceZ[index] *= sign;
+                SlopeX[index] *= sign;
+                SlopeZ[index] *= sign;
+                float xoffset = n_prime % ((TextureResolution - 1) / (LengthWidth - 1));
+                float zoffset = m_prime % ((TextureResolution - 1) / (LengthWidth - 1));
+                DisplacementMap[index].y = ComplexDisplacementMap[index].Re;
+                DisplacementMap[index].x = xoffset * PlaneScale + DisplaceX[index].Re *-1;
+                DisplacementMap[index].z = zoffset * PlaneScale + DisplaceZ[index].Re *-1;
+                Vector3 n = new Vector3(0.0f - SlopeX[index].Re, 0.0f, 0.0f - SlopeZ[index].Re).normalized;
+                Normal[index] = new Color(n.x, n.y, n.z);
+
+
+                if (n_prime == 0 && m_prime == 0)
+                {
+                    float tempOffsetX = (TextureResolution-1) % ((TextureResolution - 1) / (LengthWidth - 1));
+                    float tempOffsetZ = (TextureResolution-1) % ((TextureResolution - 1) / (LengthWidth - 1));
+                    DisplacementMap[index + TextureResolution-1 + (TextureResolution-1) * TextureResolution].y = ComplexDisplacementMap[index].Re;
+                    DisplacementMap[index + TextureResolution - 1 + (TextureResolution - 1) * TextureResolution].x = tempOffsetX * PlaneScale + DisplaceX[index].Re * -1;
+                    DisplacementMap[index + TextureResolution - 1 + (TextureResolution - 1) * TextureResolution].z = tempOffsetZ * PlaneScale + DisplaceZ[index].Re * -1;
+
+                    Normal[index + TextureResolution - 1 + (TextureResolution - 1) * TextureResolution] = new Color(n.x, n.y, n.z);
+                }
+                if (n_prime == 0)
+                {
+                    float tempOffsetX = (TextureResolution - 1) % ((TextureResolution - 1) / (LengthWidth - 1));
+                    float tempOffsetZ = m_prime % ((TextureResolution - 1) / (LengthWidth - 1));
+                    DisplacementMap[index + TextureResolution - 1].y = ComplexDisplacementMap[index].Re;
+                    DisplacementMap[index + TextureResolution - 1].x = tempOffsetX * PlaneScale + DisplaceX[index].Re;
+                    DisplacementMap[index + TextureResolution - 1].z = tempOffsetZ * PlaneScale + DisplaceZ[index].Re;
+
+                    Normal[index + TextureResolution - 1] = new Color(n.x, n.y, n.z);
+
+                }
+                if (m_prime == 0)
+                {
+                    float tempOffsetX = n_prime % ((TextureResolution - 1) / (LengthWidth - 1));
+                    float tempOffsetZ = (TextureResolution - 1) % ((TextureResolution - 1) / (LengthWidth - 1));
+                    DisplacementMap[index + (TextureResolution - 1) * TextureResolution].y = ComplexDisplacementMap[index].Re;
+                    DisplacementMap[index + (TextureResolution - 1) * TextureResolution].x = tempOffsetX * PlaneScale + DisplaceX[index].Re;
+                    DisplacementMap[index + (TextureResolution - 1) * TextureResolution].z = tempOffsetZ * PlaneScale + DisplaceZ[index].Re;
+                    Normal[index + (TextureResolution-1)*TextureResolution] = new Color(n.x, n.y, n.z);
+                }
+            }
+        }
+        //Debug.Log("Complex Displacement Map applied to Displacement Map at " + Time.time);
+        NormalMap.SetPixels(Normal);
+        NormalMap.Apply();
+        DebugNormal.SetPixels(Normal);
+        DebugNormal.Apply();
+        material.SetTexture("_BumpMap", NormalMap);
+        GenerateColorFromHeight();
+        GenerateTransparencyFromHeight();
+        ApplyHeightMap();
+        //GenerateNormalMap();
     }
 }
