@@ -6,6 +6,7 @@ public class GuiControl : MonoBehaviour {
     float Magnitude;
     float Height;
     float Speed;
+    float TSpeed;
     int Size;
     float Scale;
     public GameObject Ocean;
@@ -17,6 +18,7 @@ public class GuiControl : MonoBehaviour {
         Magnitude = oceanPlane.Magnitude;
         Height = oceanPlane.Height;
         Speed = oceanPlane.Speed;
+        TSpeed = oceanPlane.TransverseSpeed;
         Size = oceanPlane.LengthWidth;
         Scale = oceanPlane.PlaneScale;
 
@@ -36,15 +38,25 @@ public class GuiControl : MonoBehaviour {
         GUI.Box(new Rect(74, 10, 128, 32), "Magnitude = " + Magnitude);
 
         if (GUI.Button(new Rect(10, 42, 32, 32), "-"))
-            Height -= 0.01f;
-        if (GUI.Button(new Rect(42, 42 , 32, 32), "+"))
-            Height += 0.01f;
+            Height--;//= 0.01f;
+        if (GUI.Button(new Rect(42, 42, 32, 32), "+"))
+            Height++;//= 0.01f;
         GUI.Box(new Rect(74, 42, 128, 32), "Height = " + Height);
 
         if (GUI.Button(new Rect(10, 74, 32, 32), "-"))
-            Speed--;
+        {
+            Speed/=2;
+            TSpeed/=2;
+            //Speed-=0.0001f;
+            //TSpeed -= 0.0001f;
+        }
         if (GUI.Button(new Rect(42, 74, 32, 32), "+"))
+        {
             Speed++;
+            TSpeed++;
+            //Speed+=0.0001f;
+            //TSpeed+=0.0001f;
+        }
         GUI.Box(new Rect(74, 74, 128, 32), "Speed = " + Speed);
 
         if (GUI.Button(new Rect(10, 106, 32, 32), "-"))

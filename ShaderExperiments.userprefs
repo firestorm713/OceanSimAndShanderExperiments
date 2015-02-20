@@ -1,11 +1,39 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Plane.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Ocean\Scripts\Ocean.cs">
     <Files>
-      <File FileName="Assets\Materials\Shaders\OceanShader.shader" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Plane.cs" Line="638" Column="4" />
-      <File FileName="Assets\Plugins\ComplexF.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Plane.cs" Line="39" Column="11" />
+      <File FileName="Assets\Ocean\Plugins\Exocortex_FFT\ComplexF.cs" Line="1" Column="1" />
+      <File FileName="Assets\Ocean\Scripts\Ocean.cs" Line="1" Column="1" />
     </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="Assembly-CSharp" expanded="True">
+            <Node name="Ocean" expanded="True">
+              <Node name="Scripts" expanded="True">
+                <Node name="Ocean.cs" selected="True" />
+              </Node>
+            </Node>
+            <Node name="Scripts" expanded="True" />
+          </Node>
+          <Node name="Assembly-CSharp-firstpass" expanded="True">
+            <Node name="Materials" expanded="True">
+              <Node name="Shaders" expanded="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="ClassPad">
+        <State expanded="True" selected="True" />
+      </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State>
+          <Value>this.ComplexDisplacementMap</Value>
+          <Value>this.htilde0_initial</Value>
+        </State>
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
