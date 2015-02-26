@@ -54,22 +54,25 @@
      <Compile Include="Assets\Plugins\Fourier.cs" />
      <Compile Include="Assets\Plugins\FourierDirection.cs" />
      <Compile Include="Assets\Plugins\Matrix.cs" />
-     <None Include="Assets\Ocean\Ocean Sources\Ocean.shader" />
-     <None Include="Assets\Ocean\Ocean Sources\ColoredBumpedDiffuse.shader" />
      <None Include="Assets\Materials\Shaders\1 - Flat Shader.shader" />
      <None Include="Assets\Materials\Shaders\OceanShader.shader" />
      <None Include="Assets\Materials\Shaders\8 - Transparent Cutaway.shader" />
      <None Include="Assets\Materials\Shaders\8b - Transparency Map.shader" />
      <None Include="Assets\Materials\Shaders\3a - Specular Shader BROKEN.shader" />
+     <None Include="Assets\Standard Assets\Skyboxes\_skybox info.txt" />
      <None Include="Assets\Materials\Shaders\5 - Multiple Lights.shader" />
      <None Include="Assets\Materials\Shaders\2 - Lambert Shader.shader" />
      <None Include="Assets\Materials\Shaders\7 - Normal Map.shader" />
      <None Include="Assets\Materials\Shaders\4 - Rim Lighting.shader" />
      <None Include="Assets\Materials\Shaders\6 - Diffuse Map.shader" />
+     <None Include="Assets\Plugins\Cloo.xml" />
      <None Include="Assets\Materials\Shaders\3b - Specular Shader.shader" />
      <None Include="Assets\Materials\Shaders\3c - Specular Shader Per Pixel.shader" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files (x86)/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/4.6.1/UnityEngine.UI.dll</HintPath>
+ </Reference>
+ <Reference Include="Cloo">
+ <HintPath>D:/Storage/Documents/ShaderExperiments/Assets/Plugins/Cloo.dll</HintPath>
  </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,26 +1,22 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Ocean\Scripts\Ocean.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Plane.cs">
     <Files>
-      <File FileName="Assets\Scripts\Plane.cs" Line="39" Column="11" />
-      <File FileName="Assets\Ocean\Plugins\Exocortex_FFT\ComplexF.cs" Line="1" Column="1" />
-      <File FileName="Assets\Ocean\Scripts\Ocean.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Plane.cs" Line="761" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
           <Node name="Assembly-CSharp" expanded="True">
-            <Node name="Ocean" expanded="True">
-              <Node name="Scripts" expanded="True">
-                <Node name="Ocean.cs" selected="True" />
-              </Node>
+            <Node name="Scripts" expanded="True">
+              <Node name="Plane.cs" selected="True" />
             </Node>
-            <Node name="Scripts" expanded="True" />
           </Node>
           <Node name="Assembly-CSharp-firstpass" expanded="True">
             <Node name="Materials" expanded="True">
               <Node name="Shaders" expanded="True" />
             </Node>
+            <Node name="Plugins" expanded="True" />
           </Node>
         </State>
       </Pad>
@@ -36,7 +32,9 @@
     </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="D:\Storage\Documents\ShaderExperiments\Assets\Scripts\Plane.cs" line="205" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>

@@ -46,35 +46,30 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Ocean\Plugins\Exocortex_FFT\Complex.cs" />
-     <Compile Include="Assets\Ocean\Plugins\Exocortex_FFT\ComplexArray.cs" />
-     <Compile Include="Assets\Ocean\Plugins\Exocortex_FFT\ComplexF.cs" />
-     <Compile Include="Assets\Ocean\Plugins\Exocortex_FFT\ComplexMath.cs" />
-     <Compile Include="Assets\Ocean\Plugins\Exocortex_FFT\ComplexStats.cs" />
-     <Compile Include="Assets\Ocean\Plugins\Exocortex_FFT\Fourier.cs" />
-     <Compile Include="Assets\Ocean\Plugins\Exocortex_FFT\FourierDirection.cs" />
-     <Compile Include="Assets\Ocean\Scripts\BoyancyCS.cs" />
-     <Compile Include="Assets\Ocean\Scripts\DestroyTimed.cs" />
-     <Compile Include="Assets\Ocean\Scripts\Ocean.cs" />
+     <Compile Include="Assets\Scripts\ClooTest.cs" />
      <Compile Include="Assets\Scripts\GuiControl.cs" />
-     <Compile Include="Assets\Scripts\Plane.cs" />
+     <Compile Include="Assets\Scripts\Ocean.cs" />
+     <Compile Include="Assets\Scripts\WindDirController.cs" />
      <Compile Include="Assets\Scripts\someclass.cs" />
-     <None Include="Assets\Ocean\Ocean Sources\Ocean.shader" />
-     <None Include="Assets\Ocean\Ocean Sources\ColoredBumpedDiffuse.shader" />
      <None Include="Assets\Materials\Shaders\1 - Flat Shader.shader" />
      <None Include="Assets\Materials\Shaders\OceanShader.shader" />
      <None Include="Assets\Materials\Shaders\8 - Transparent Cutaway.shader" />
      <None Include="Assets\Materials\Shaders\8b - Transparency Map.shader" />
      <None Include="Assets\Materials\Shaders\3a - Specular Shader BROKEN.shader" />
+     <None Include="Assets\Standard Assets\Skyboxes\_skybox info.txt" />
      <None Include="Assets\Materials\Shaders\5 - Multiple Lights.shader" />
      <None Include="Assets\Materials\Shaders\2 - Lambert Shader.shader" />
      <None Include="Assets\Materials\Shaders\7 - Normal Map.shader" />
      <None Include="Assets\Materials\Shaders\4 - Rim Lighting.shader" />
      <None Include="Assets\Materials\Shaders\6 - Diffuse Map.shader" />
+     <None Include="Assets\Plugins\Cloo.xml" />
      <None Include="Assets\Materials\Shaders\3b - Specular Shader.shader" />
      <None Include="Assets\Materials\Shaders\3c - Specular Shader Per Pixel.shader" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files (x86)/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/4.6.1/UnityEngine.UI.dll</HintPath>
+ </Reference>
+ <Reference Include="Cloo">
+ <HintPath>D:/Storage/Documents/ShaderExperiments/Assets/Plugins/Cloo.dll</HintPath>
  </Reference>
   </ItemGroup>
   <ItemGroup>
