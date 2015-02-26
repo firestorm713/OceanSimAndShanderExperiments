@@ -4,7 +4,7 @@ Shader "unityCookie/introduction/7 - Normal Map"
 		_Color ("Color Tint", Color) = (1.0,1.0,1.0,1.0)
 		_MainTex ("Diffuse Texture", 2D) = "white"{}
 		_BumpMap ("Normal Texture", 2D) = "white"{}
-		_BumpDepth ("Bump Depth", Range(-2.0, 2.0)) = 1
+		_BumpDepth ("Bump Depth", Range(0, 2.0)) = 1
 		_SpecColor ("Specular Color", Color) = (1.0,1.0,1.0,1.0)
 		_Shininess ("Shininess", float) = 10.0
 		_RimColor ("Rim Color", Color) = (1.0, 1.0, 1.0, 1.0)
@@ -67,7 +67,7 @@ Shader "unityCookie/introduction/7 - Normal Map"
 			float4 frag(vertexOutput i) : COLOR
 			{
 
-				float3 viewDirection = normalize(_WorldSpaceCameraPos.xyz - mul(_Object2World, i.posWorld.xyz));
+				float3 viewDirection = normalize(_WorldSpaceCameraPos.xyz - mul(_Object2World, (float3)i.posWorld.xyz));
 				float3 fragmentToLightSource = float3(_WorldSpaceLightPos0.xyz - float3(i.posWorld.xyz));
 				float dist = length(fragmentToLightSource);
 				float3 lightDirection = normalize(lerp(_WorldSpaceLightPos0.xyz, fragmentToLightSource,_WorldSpaceLightPos0.w));

@@ -2,7 +2,7 @@
 	Properties{
 		_Color("Color", Color) = (1.0, 1.0, 1.0, 1.0)
 		_MainTex("Diffuse Texture", 2D) = "white"{}
-		_transMap ("Transparency (A)", 2D) = "white"{}
+		//_transMap ("Transparency (A)", 2D) = "white"{}
 		_BumpMap ("Normal Texture", 2D) = "white"{}
 		_SpecColor("Shininess", float) = 10.0
 		_RimColor ("Rim Color", Color) = (1.0, 1.0, 1.0, 1.0)
@@ -10,12 +10,12 @@
 
 	}
 	SubShader{
-		Tags{ "Queue" = "Transparent"}
-		Blend SrcAlpha OneMinusSrcAlpha
+		Tags{"LightMode" = "ForwardBase"}
+		//Blend SrcAlpha OneMinusSrcAlpha
 		Pass
 		{
-			Cull Off
-			zWrite Off
+			//Cull Off
+			//zWrite Off
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
@@ -24,7 +24,7 @@
 			uniform sampler2D _MainTex;
 			uniform sampler2D _BumpMap;
 			uniform float4 _MainTex_ST;
-			uniform float4 _transMap_ST;
+			//uniform float4 _transMap_ST;
 			uniform float4 _BumpMap_ST;
 			uniform float4 _Color;
 			uniform float4 _SpecColor;
@@ -75,7 +75,7 @@
 				float3 lightDirection = normalize(lerp(_WorldSpaceLightPos0.xyz, fragmentToLightSource, _WorldSpaceLightPos0.w));
 				float atten = lerp(1.0, 1.0/dist, _WorldSpaceLightPos0.w);
 
-				float4 texA = tex2D(_transMap, _transMap_ST.xy * i.tex.xy + _transMap_ST.zw);
+				//float4 texA = tex2D(_transMap, _transMap_ST.xy * i.tex.xy + _transMap_ST.zw);
 				float4 tex = tex2D(_MainTex, i.tex.xy * _MainTex_ST.xy + _MainTex_ST.zw);
 				float4 texN = tex2D(_BumpMap, i.tex.xy * _BumpMap_ST.xy + _BumpMap_ST.zw);
 
@@ -98,8 +98,8 @@
 				half rim = 1 - saturate(dot(viewDirection, normalDirection));
 				float3 rimLighting = saturate(dot(normalDirection, lightDirection)) * pow(rim, _RimPower);
 				
-				float alpha = texA.a * _Color.a;
-				return float4(_Color.xyz * tex.xyz, alpha);
+				//float alpha = texA.a * _Color.a;
+				return float4(_Color.xyz * tex.xyz, 1);
 			}
 			ENDCG
 		}
